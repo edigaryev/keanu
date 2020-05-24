@@ -1,0 +1,13 @@
+color:
+  matrix:
+    - green: 80
+      liquid: water
+    - black: 90
+      liquid: milk
+---
+color:
+  green: 80
+  liquid: water
+color:
+  black: 90
+  liquid: milk

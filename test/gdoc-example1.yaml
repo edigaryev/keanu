@@ -1,0 +1,9 @@
+foo:
+  matrix:
+    name: bar
+    name: baz
+---
+foo:
+  name: bar
+foo:
+  name: baz

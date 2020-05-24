@@ -1,0 +1,12 @@
+temperature:
+  matrix:
+    - degrees: true
+    - celsius: true
+  stray: sibling
+---
+temperature:
+  stray: sibling
+  degrees: true
+temperature:
+  stray: sibling
+  celsius: true

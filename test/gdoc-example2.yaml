@@ -1,0 +1,11 @@
+node:
+  matrix:
+    - config:
+        foo: bar
+    - key: value
+---
+node:
+  config:
+    foo: bar
+node:
+  key: value

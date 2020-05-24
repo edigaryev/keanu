@@ -1,0 +1,12 @@
+nestedList:
+  - - color:
+        matrix:
+          - black: true
+          - white: true
+---
+nestedList:
+  - - color:
+        black: true
+nestedList:
+  - - color:
+        white: true
