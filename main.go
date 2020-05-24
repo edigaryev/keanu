@@ -8,19 +8,19 @@ import (
 )
 
 const (
-	ArgInputPath = iota
-	ArgOutputPath
-	ArgMax
+	argInputPath = iota
+	argOutputPath
+	argMax
 )
 
 func main() {
 	flag.Parse()
 
-	if len(flag.Args()) == 0 || len(flag.Args()) > ArgMax {
+	if len(flag.Args()) == 0 || len(flag.Args()) > argMax {
 		log.Fatal("usage: keanu input.yaml [output.yaml]")
 	}
 
-	inputPath := flag.Arg(ArgInputPath)
+	inputPath := flag.Arg(argInputPath)
 	p, err := preprocessor.NewFromFile(inputPath)
 	if err != nil {
 		log.Fatal(err)
@@ -33,8 +33,8 @@ func main() {
 
 	// Determine the output destination: stdout or file
 	var output *os.File
-	if len(flag.Args()) == ArgMax {
-		outputPath := flag.Arg(ArgOutputPath)
+	if len(flag.Args()) == argMax {
+		outputPath := flag.Arg(argOutputPath)
 		output, err = os.OpenFile(outputPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 		if err != nil {
 			log.Fatal(err)
