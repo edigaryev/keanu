@@ -1,7 +1,7 @@
 # Keanu
 
 [![Cirrus CI](https://api.cirrus-ci.com/github/edigaryev/keanu.svg)](https://cirrus-ci.com/github/edigaryev/keanu)
-[![GoDoc](https://godoc.org/github.com/edigaryev/keanu?status.svg)](https://godoc.org/github.com/edigaryev/keanu)
+[![GoDoc](https://godoc.org/github.com/edigaryev/keanu?status.svg)](https://godoc.org/github.com/edigaryev/keanu/preprocessor?tab=doc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/edigaryev/keanu)](https://goreportcard.com/report/github.com/edigaryev/keanu)
 [![Codecov](https://codecov.io/gh/edigaryev/keanu/branch/master/graph/badge.svg)](https://codecov.io/gh/edigaryev/keanu)
 
