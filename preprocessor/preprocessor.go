@@ -62,14 +62,16 @@ func (p *Preprocessor) singlePass() (bool, error) {
 		return false, nil
 	}
 
-	for _, mapItem := range p.firstDocument {
+	for i := range p.firstDocument {
+		mapItem := &p.firstDocument[i]
+
 		var out []yaml.MapItem
-		if err := traverse(&mapItem, &mapItem, expandOneMatrix, &out); err != nil {
+		if err := traverse(mapItem, mapItem, expandOneMatrix, &out); err != nil {
 			return true, err
 		}
 
 		if len(out) == 0 {
-			newParseTree = append(newParseTree, mapItem)
+			newParseTree = append(newParseTree, *mapItem)
 		} else {
 			newParseTree = append(newParseTree, out...)
 			expanded = true
