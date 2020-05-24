@@ -7,15 +7,24 @@ import (
 	"os"
 )
 
+// ErrNeedMap is returned when the input document passed to preprocessor
+// does not contain a map as it's "outer" layer.
 var ErrNeedMap = errors.New("first document should be a map")
+
+// ErrMatrixNeedsCollection is returned when the matrix modifier
+// does not contain a collection (either map or slice) inside.
 var ErrMatrixNeedsCollection = errors.New("matrix should contain a collection")
+
+// ErrMatrixNeedsListOfMaps is returned when the matrix modifier contains
+// something other than maps (e.g. lists or scalars) as it's items.
 var ErrMatrixNeedsListOfMaps = errors.New("matrix with a list can only contain maps as it's items")
 
+// A Preprocessor for YAML files with matrix modifiers.
 type Preprocessor struct {
 	firstDocument yaml.MapSlice
 }
 
-// Constructs a new preprocessor by loading the first YAML document from the supplied byte slice.
+// New constructs preprocessor by loading the first YAML document from the supplied byte slice.
 func New(in []byte) (*Preprocessor, error) {
 	p := &Preprocessor{}
 
@@ -27,7 +36,7 @@ func New(in []byte) (*Preprocessor, error) {
 	return p, nil
 }
 
-// Constructs a new preprocessor by loading the first YAML document from the file located at path.
+// NewFromFile constructs preprocessor by loading the first YAML document from the file located at path.
 func NewFromFile(path string) (*Preprocessor, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -72,7 +81,7 @@ func (p *Preprocessor) singlePass() (bool, error) {
 	return expanded, nil
 }
 
-// Preprocesses matrix modifiers in the loaded YAML document.
+// Run preprocesses matrix modifiers in the loaded YAML document.
 func (p *Preprocessor) Run() error {
 	for {
 		expanded, err := p.singlePass()
@@ -88,7 +97,7 @@ func (p *Preprocessor) Run() error {
 	}
 }
 
-// Marshals the loaded (and possibly preprocessed) YAML document back.
+// Dump marshals the loaded (and possibly preprocessed) YAML document back.
 func (p *Preprocessor) Dump() ([]byte, error) {
 	return yaml.Marshal(&p.firstDocument)
 }
