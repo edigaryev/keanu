@@ -1,0 +1,15 @@
+container:
+  image: golang:latest
+
+env:
+  GOPROXY: https://proxy.golang.org
+
+test_task:
+  test_script:
+    - go test -v ./...
+
+build_task:
+  depends_on:
+    - test
+  build_script:
+    - go build
