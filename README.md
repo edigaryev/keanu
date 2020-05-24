@@ -3,6 +3,7 @@
 [![Cirrus CI](https://api.cirrus-ci.com/github/edigaryev/keanu.svg)](https://cirrus-ci.com/github/edigaryev/keanu)
 [![GoDoc](https://godoc.org/github.com/edigaryev/keanu?status.svg)](https://godoc.org/github.com/edigaryev/keanu)
 [![Go Report Card](https://goreportcard.com/badge/github.com/edigaryev/keanu)](https://goreportcard.com/report/github.com/edigaryev/keanu)
+[![Codecov](https://codecov.io/gh/edigaryev/keanu/branch/master/graph/badge.svg)](https://codecov.io/gh/edigaryev/keanu)
 
 Preprocesses YAML files with `matrix` modifiers, semantically similar to [what Cirrus CI does](https://cirrus-ci.org/guide/writing-tasks/#matrix-modification).
 
