@@ -14,7 +14,7 @@ test_task:
   depends_on:
     - lint
   env:
-    CODECOV_TOKEN: "cdb42aa7-f7b2-4469-9452-bee9a71d4d47"
+    CODECOV_TOKEN: ENCRYPTED[eb3a139bee16efc210790c5be7d89160ed9fd382580c0820dfd9739f5ed978406b89b4fee722f6066bf14d29a5f886ad]
   test_script:
     - go test -v -coverprofile=coverage.txt -covermode=atomic ./...
     - bash <(curl -s https://codecov.io/bash)
