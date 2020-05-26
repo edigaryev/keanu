@@ -28,9 +28,6 @@ func process(something interface{}, f callback) (err error) {
 				return err
 			}
 		}
-	case yaml.MapItem:
-		// YAML mapping KV pair
-		err = traverse(&obj, f)
 	case []interface{}:
 		// YAML sequence node
 		for _, obj := range obj {
