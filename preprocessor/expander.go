@@ -6,38 +6,32 @@ import (
 
 // Callback function to be called by traverse().
 //
-// Traversal continues until this function decides that
-// no more artifacts can be collected into out slice
-// and returns true.
-type callback func(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem) (bool, error)
+// Traversal continues until this function returns true.
+type callback func(item *yaml.MapItem) (bool, error)
 
 // Implements preorder traversal of the YAML parse tree.
-func traverse(root *yaml.MapItem, item *yaml.MapItem, f callback, out *[]yaml.MapItem) error {
-	done, err := f(root, item, out)
-	if done {
+func traverse(item *yaml.MapItem, f callback) error {
+	done, err := f(item)
+	if done || err != nil {
 		return err
 	}
-
-	return process(root, item.Value, f, out)
+	return process(item.Value, f)
 }
 
 // Recursive descent helper for traverse().
-func process(root *yaml.MapItem, something interface{}, f callback, out *[]yaml.MapItem) (err error) {
+func process(something interface{}, f callback) (err error) {
 	switch obj := something.(type) {
 	case yaml.MapSlice:
 		// YAML mapping node
 		for i := range obj {
-			if err := traverse(root, &obj[i], f, out); err != nil {
+			if err := traverse(&obj[i], f); err != nil {
 				return err
 			}
 		}
-	case yaml.MapItem:
-		// YAML mapping KV pair
-		err = traverse(root, &obj, f, out)
 	case []interface{}:
 		// YAML sequence node
 		for _, obj := range obj {
-			if err := process(root, obj, f, out); err != nil {
+			if err := process(obj, f); err != nil {
 				return err
 			}
 		}
@@ -47,12 +41,12 @@ func process(root *yaml.MapItem, something interface{}, f callback, out *[]yaml.
 }
 
 // Expands one MapItem if it holds a "matrix" into multiple MapItem's
-// and writes result to out.
-func expandOneMatrix(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem) (bool, error) {
+// Note: this function has side-effects and root will be dirty after the invocation!
+func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) (result []yaml.MapItem, err error) {
 	// Potential "matrix" modifier can only be found in a map
 	obj, ok := item.Value.(yaml.MapSlice)
 	if !ok {
-		return false, nil
+		return result, nil
 	}
 
 	// Split the map into two slices:
@@ -71,7 +65,7 @@ func expandOneMatrix(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem
 
 	// Keep going deeper if no "matrix" modifiers were found at this level
 	if len(matrixSlice) == 0 {
-		return false, nil
+		return result, nil
 	}
 
 	// Take the first "matrix" modifier found and pour the rest (if any)
@@ -105,7 +99,7 @@ func expandOneMatrix(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem
 			// This restriction was made purely for simplicity's sake and can be lifted in the future.
 			innerSlice, ok := listItem.(yaml.MapSlice)
 			if !ok {
-				return true, ErrMatrixNeedsListOfMaps
+				return result, ErrMatrixNeedsListOfMaps
 			}
 
 			// Generate a single parametrization
@@ -114,7 +108,7 @@ func expandOneMatrix(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem
 		}
 	default:
 		// Semantics is undefined for "matrix" modifiers without a collection inside
-		return true, ErrMatrixNeedsCollection
+		return result, ErrMatrixNeedsCollection
 	}
 
 	// The Tricky Part™
@@ -130,11 +124,11 @@ func expandOneMatrix(root *yaml.MapItem, item *yaml.MapItem, out *[]yaml.MapItem
 
 		var divergedRoot yaml.MapItem
 		if err := deepcopy(&divergedRoot, *root); err != nil {
-			return true, err
+			return result, err
 		}
 
-		*out = append(*out, divergedRoot)
+		result = append(result, divergedRoot)
 	}
 
-	return true, nil
+	return result, nil
 }

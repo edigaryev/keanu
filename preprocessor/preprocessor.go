@@ -21,14 +21,14 @@ var ErrMatrixNeedsListOfMaps = errors.New("matrix with a list can only contain m
 
 // A Preprocessor for YAML files with matrix modifiers.
 type Preprocessor struct {
-	firstDocument yaml.MapSlice
+	currentTrees yaml.MapSlice
 }
 
 // New constructs preprocessor by loading the first YAML document from the supplied byte slice.
 func New(in []byte) (*Preprocessor, error) {
 	p := &Preprocessor{}
 
-	err := yaml.Unmarshal(in, &p.firstDocument)
+	err := yaml.Unmarshal(in, &p.currentTrees)
 	if err != nil {
 		return nil, ErrNeedMap
 	}
@@ -55,30 +55,44 @@ func NewFromFile(path string) (*Preprocessor, error) {
 // Recursively processes each "outer" map key of the loaded YAML document
 // in an attempt to produce multiple keys as a result of matrix expansion.
 func (p *Preprocessor) singlePass() (bool, error) {
-	var newParseTree yaml.MapSlice
+	var newParsedTree yaml.MapSlice
 	var expanded bool
 
-	if len(p.firstDocument) == 0 {
+	if len(p.currentTrees) == 0 {
 		return false, nil
 	}
 
-	for i := range p.firstDocument {
-		mapItem := &p.firstDocument[i]
+	for i := range p.currentTrees {
+		var treeToExpand yaml.MapItem
+		// deepcopy since expandIfMatrix has side effects
+		if err := deepcopy(&treeToExpand, p.currentTrees[i]); err != nil {
+			return false, err
+		}
 
-		var out []yaml.MapItem
-		if err := traverse(mapItem, mapItem, expandOneMatrix, &out); err != nil {
+		var expandedTrees []yaml.MapItem
+		expandedTreesCollector := func(item *yaml.MapItem) (bool, error) {
+			newTrees, expandErr := expandIfMatrix(&treeToExpand, item)
+			// stop once found any expansion
+			if len(newTrees) != 0 {
+				expandedTrees = newTrees
+				return true, nil
+			}
+			return false, expandErr
+		}
+
+		if err := traverse(&treeToExpand, expandedTreesCollector); err != nil {
 			return true, err
 		}
 
-		if len(out) == 0 {
-			newParseTree = append(newParseTree, *mapItem)
+		if len(expandedTrees) == 0 {
+			newParsedTree = append(newParsedTree, treeToExpand)
 		} else {
-			newParseTree = append(newParseTree, out...)
+			newParsedTree = append(newParsedTree, expandedTrees...)
 			expanded = true
 		}
 	}
 
-	p.firstDocument = newParseTree
+	p.currentTrees = newParsedTree
 
 	return expanded, nil
 }
@@ -101,5 +115,5 @@ func (p *Preprocessor) Run() error {
 
 // Dump marshals the loaded (and possibly preprocessed) YAML document back.
 func (p *Preprocessor) Dump() ([]byte, error) {
-	return yaml.Marshal(&p.firstDocument)
+	return yaml.Marshal(&p.currentTrees)
 }
