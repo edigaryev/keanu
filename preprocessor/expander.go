@@ -45,8 +45,7 @@ func process(something interface{}, f callback) (err error) {
 
 // Expands one MapItem if it holds a "matrix" into multiple MapItem's
 // Note: this function has side-effects and root will be dirty after the invocation!
-func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) ([]yaml.MapItem, error) {
-	var result []yaml.MapItem
+func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) (result []yaml.MapItem, err error) {
 	// Potential "matrix" modifier can only be found in a map
 	obj, ok := item.Value.(yaml.MapSlice)
 	if !ok {
