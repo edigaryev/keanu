@@ -65,15 +65,25 @@ func (p *Preprocessor) singlePass() (bool, error) {
 	for i := range p.currentTrees {
 		treeToExpand := &p.currentTrees[i]
 
-		var out []yaml.MapItem
-		if err := traverse(treeToExpand, treeToExpand, expandOneMatrix, &out); err != nil {
+		var expandedTrees []yaml.MapItem
+		expandedTreesCollector := func(item *yaml.MapItem) (bool, error) {
+			newTrees, expandErr := expandIfMatrix(treeToExpand, item)
+			// stop once found any expansion
+			if len(newTrees) != 0 {
+				expandedTrees = newTrees
+				return true, nil
+			}
+			return false, expandErr
+		}
+
+		if err := traverse(treeToExpand, expandedTreesCollector); err != nil {
 			return true, err
 		}
 
-		if len(out) == 0 {
+		if len(expandedTrees) == 0 {
 			newParsedTree = append(newParsedTree, *treeToExpand)
 		} else {
-			newParsedTree = append(newParsedTree, out...)
+			newParsedTree = append(newParsedTree, expandedTrees...)
 			expanded = true
 		}
 	}
