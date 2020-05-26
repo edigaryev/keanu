@@ -63,11 +63,15 @@ func (p *Preprocessor) singlePass() (bool, error) {
 	}
 
 	for i := range p.currentTrees {
-		treeToExpand := &p.currentTrees[i]
+		var treeToExpand yaml.MapItem
+		// deepcopy since expandIfMatrix has side effects
+		if err := deepcopy(&treeToExpand, p.currentTrees[i]); err != nil {
+			return false, err
+		}
 
 		var expandedTrees []yaml.MapItem
 		expandedTreesCollector := func(item *yaml.MapItem) (bool, error) {
-			newTrees, expandErr := expandIfMatrix(treeToExpand, item)
+			newTrees, expandErr := expandIfMatrix(&treeToExpand, item)
 			// stop once found any expansion
 			if len(newTrees) != 0 {
 				expandedTrees = newTrees
@@ -76,12 +80,12 @@ func (p *Preprocessor) singlePass() (bool, error) {
 			return false, expandErr
 		}
 
-		if err := traverse(treeToExpand, expandedTreesCollector); err != nil {
+		if err := traverse(&treeToExpand, expandedTreesCollector); err != nil {
 			return true, err
 		}
 
 		if len(expandedTrees) == 0 {
-			newParsedTree = append(newParsedTree, *treeToExpand)
+			newParsedTree = append(newParsedTree, treeToExpand)
 		} else {
 			newParsedTree = append(newParsedTree, expandedTrees...)
 			expanded = true

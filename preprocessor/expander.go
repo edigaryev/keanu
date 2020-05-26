@@ -6,9 +6,7 @@ import (
 
 // Callback function to be called by traverse().
 //
-// Traversal continues until this function decides that
-// no more artifacts can be collected into out slice
-// and returns true.
+// Traversal continues until this function returns true.
 type callback func(item *yaml.MapItem) (bool, error)
 
 // Implements preorder traversal of the YAML parse tree.
@@ -46,7 +44,7 @@ func process(something interface{}, f callback) (err error) {
 }
 
 // Expands one MapItem if it holds a "matrix" into multiple MapItem's
-// and writes result to out.
+// Note: this function has side-effects and root will be dirty after the invocation!
 func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) ([]yaml.MapItem, error) {
 	var result []yaml.MapItem
 	// Potential "matrix" modifier can only be found in a map
