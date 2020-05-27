@@ -50,29 +50,35 @@ func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) (result []yaml.MapIt
 	}
 
 	// Split the map into two slices:
-	// * nonMatrixSlice contains non-"matrix" items
-	// * matrixSlice contains items with the "matrix" key
-	var nonMatrixSlice []yaml.MapItem
-	var matrixSlice []yaml.MapItem
+	//
+	// * beforeSlice contains items that come before the first matrix key
+	// * afterSlice contains items that come after the first matrix key
+	//
+	// Note: we'll only expand the first matrix modifier
+	// as a part of this function; the rest will be kept intact
+	// and processed by the forthcoming invocations of singlePass().
+	var beforeSlice, afterSlice []yaml.MapItem
+	var matrix yaml.MapItem
+
+	jumpedOverMatrix := false
 
 	for _, sliceItem := range obj {
-		if sliceItem.Key == "matrix" {
-			matrixSlice = append(matrixSlice, sliceItem)
+		if !jumpedOverMatrix {
+			if sliceItem.Key == "matrix" {
+				matrix = sliceItem
+				jumpedOverMatrix = true
+			} else {
+				beforeSlice = append(beforeSlice, sliceItem)
+			}
 		} else {
-			nonMatrixSlice = append(nonMatrixSlice, sliceItem)
+			afterSlice = append(afterSlice, sliceItem)
 		}
 	}
 
 	// Keep going deeper if no "matrix" modifiers were found at this level
-	if len(matrixSlice) == 0 {
+	if !jumpedOverMatrix {
 		return result, nil
 	}
-
-	// Take the first "matrix" modifier found and pour the rest (if any)
-	// into a slice of non-"matrix" items for further processing
-	// by the forthcoming invocations of singlePass().
-	matrix, matrixSlice := matrixSlice[0], matrixSlice[1:]
-	nonMatrixSlice = append(nonMatrixSlice, matrixSlice...)
 
 	// Extract parametrizations from "matrix" modifier we've selected
 	var parametrizations []yaml.MapSlice
@@ -80,19 +86,24 @@ func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) (result []yaml.MapIt
 	switch obj := matrix.Value.(type) {
 	case yaml.MapSlice:
 		for _, sliceItem := range obj {
-			// Inherit "matrix" siblings
+			// Inherit matrix siblings that come before it
 			var tmp yaml.MapSlice
-			tmp = append(tmp, nonMatrixSlice...)
+			tmp = append(tmp, beforeSlice...)
+
+			// Inject parametrization-specific item from the matrix
+			tmp = append(tmp, sliceItem)
+
+			// Inherit matrix siblings that come after it
+			tmp = append(tmp, afterSlice...)
 
 			// Generate a single parametrization
-			tmp = append(tmp, sliceItem)
 			parametrizations = append(parametrizations, tmp)
 		}
 	case []interface{}:
 		for _, listItem := range obj {
-			// Inherit "matrix" siblings
+			// Inherit matrix siblings that come before it
 			var tmp yaml.MapSlice
-			tmp = append(tmp, nonMatrixSlice...)
+			tmp = append(tmp, beforeSlice...)
 
 			// Ensure that matrix with a list contains only maps as it's items
 			//
@@ -102,8 +113,13 @@ func expandIfMatrix(root *yaml.MapItem, item *yaml.MapItem) (result []yaml.MapIt
 				return result, ErrMatrixNeedsListOfMaps
 			}
 
-			// Generate a single parametrization
+			// Inject parametrization-specific items from the matrix
 			tmp = append(tmp, innerSlice...)
+
+			// Inherit matrix siblings that come after it
+			tmp = append(tmp, afterSlice...)
+
+			// Generate a single parametrization
 			parametrizations = append(parametrizations, tmp)
 		}
 	default:
