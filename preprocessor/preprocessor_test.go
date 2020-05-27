@@ -66,6 +66,7 @@ var goodCases = []string{
 	"doubly-nested-unbalanced.yaml",
 	"matrix-inside-of-a-list-of-lists.yaml",
 	"matrix-siblings.yaml",
+	"multiple-matrices-on-the-same-level.yaml",
 }
 
 var badCases = []struct {

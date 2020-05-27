@@ -1,0 +1,23 @@
+cpu:
+  matrix:
+    architecture: "x86"
+    architecture: "x86_64"
+  matrix:
+    cores: 4
+    cores: 8
+---
+cpu:
+  architecture: "x86"
+  cores: 4
+
+cpu:
+  architecture: "x86"
+  cores: 8
+
+cpu:
+  architecture: "x86_64"
+  cores: 4
+
+cpu:
+  architecture: "x86_64"
+  cores: 8

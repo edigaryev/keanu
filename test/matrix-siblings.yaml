@@ -5,8 +5,8 @@ temperature:
   stray: sibling
 ---
 temperature:
-  stray: sibling
   degrees: true
-temperature:
   stray: sibling
+temperature:
   celsius: true
+  stray: sibling

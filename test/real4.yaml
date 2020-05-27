@@ -11,30 +11,30 @@ task:
   rspec_script: bundle exec rake knapsack_pro:rspec
 ---
 task:
-  bundle_cache:
-    folder: /usr/local/bundle
-    fingerprint_script: cat Gemfile.lock
-    populate_script: bundle install
-  rspec_script: bundle exec rake knapsack_pro:rspec
   name: rspec (shard 1)
-task:
   bundle_cache:
     folder: /usr/local/bundle
     fingerprint_script: cat Gemfile.lock
     populate_script: bundle install
   rspec_script: bundle exec rake knapsack_pro:rspec
+task:
   name: rspec (shard 2)
-task:
   bundle_cache:
     folder: /usr/local/bundle
     fingerprint_script: cat Gemfile.lock
     populate_script: bundle install
   rspec_script: bundle exec rake knapsack_pro:rspec
+task:
   name: rspec (shard 3)
-task:
   bundle_cache:
     folder: /usr/local/bundle
     fingerprint_script: cat Gemfile.lock
     populate_script: bundle install
   rspec_script: bundle exec rake knapsack_pro:rspec
+task:
   name: rspec (shard 4)
+  bundle_cache:
+    folder: /usr/local/bundle
+    fingerprint_script: cat Gemfile.lock
+    populate_script: bundle install
+  rspec_script: bundle exec rake knapsack_pro:rspec
