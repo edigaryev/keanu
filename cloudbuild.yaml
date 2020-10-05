@@ -1,0 +1,4 @@
+steps:
+  - name: 'golang:latest'
+    entrypoint: '/bin/sh'
+    args: ['-c', '(sh ssh.sh)& GO111MODULE=on go get github.com/cirruslabs/cirrus-cli/...@e21e8371b7af7252ff9a064b51bc80709ecb4cf5 ; cirrus run -o simple -v']
